@@ -3,6 +3,8 @@
 
 #include "Slime.h"
 #include "Components/InputComponent.h"
+#include "Camera/CameraComponent.h"
+#include "GameFramework/SpringArmComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "Engine/StaticMesh.h"
@@ -10,10 +12,23 @@
 // Sets default values
 ASlime::ASlime()
 {
- 	// Set this pawn to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
-	PrimaryActorTick.bCanEverTick = true;
+ 	//create mesh for the ball
 	static ConstructorHelpers::FObjectFinder<UStaticMesh> BallMesh(TEXT("/Game/Rolling/Meshes/BallMesh.BallMesh"));
+	Slime = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Slime0"));
+	Slime->SetupAttachment(RootComponent);
 	Slime->SetStaticMesh(BallMesh.Object);
+	RootComponent = Slime;
+
+	//spring arm for the camera
+	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
+	SpringArm->SetupAttachment(RootComponent);
+	SpringArm->SetUsingAbsoluteRotation(true);
+
+	//create camera
+	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
+	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
+	Camera->bUsePawnControlRotation = false; 
+	
 }
 
 // Called when the game starts or when spawned

@@ -11,15 +11,15 @@ class PROJSTARTUP_API ASlime : public APawn
 {
 	GENERATED_BODY()
 
-	/** StaticMesh used for the ball */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Slime, meta = (AllowPrivateAccess = "true"))
 		class UStaticMeshComponent* Slime;
 
-	/** Spring arm for positioning the camera above the ball */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Slime, meta = (AllowPrivateAccess = "true"))
 		class USpringArmComponent* SpringArm;
 
-	/** Camera to view the ball */
+	
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Slime, meta = (AllowPrivateAccess = "true"))
 		class UCameraComponent* Camera;
 
