@@ -26,8 +26,17 @@ class PROJSTARTUP_API ASlime : public APawn
 public:
 	// Sets default values for this pawn's properties
 	ASlime();
+	
 	UPROPERTY(EditAnywhere, Category = Slime)
 	float rollTorque;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float BaseTurnRate;
+
+	UPROPERTY(EditAnywhere, Category = Camera)
+	float BaseLookUpRate;
+
+
 
 protected:
 	// Called when the game starts or when spawned
@@ -36,6 +45,10 @@ protected:
 	void MoveRight(float value);
 
 	void MoveForward(float value);
+
+	void TurnAtRate(float Rate);
+
+	void LookUpAtRate(float Rate);
 	
 	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
