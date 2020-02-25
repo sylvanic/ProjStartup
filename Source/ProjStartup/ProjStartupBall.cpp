@@ -6,12 +6,13 @@
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
 
 AProjStartupBall::AProjStartupBall()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BallMesh(TEXT("/Game/Rolling/Meshes/BallMesh.BallMesh"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BallMesh(TEXT("/Game/Meshes/1M_Cube"));
 
 	// Create mesh component for the ball
 	Ball = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ball0"));
@@ -39,11 +40,19 @@ AProjStartupBall::AProjStartupBall()
 	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
 	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
 	Camera->bUsePawnControlRotation = false; // We don't want the controller rotating the camera
+	Camera->PostProcessSettings.AutoExposureMinBrightness = 1.0f;
+	Camera->PostProcessSettings.AutoExposureMaxBrightness = 2.0f;
 
 	// Set up forces
-	RollTorque = 50000000.0f;
-	JumpImpulse = 350000.0f;
+	Ball->SetMassOverrideInKg("Ball", 0.5f, true);
+	RollTorque = 50000.0f;
+	JumpImpulse = 300.0f;
 	bCanJump = true; // Start being able to jump
+
+	//disable AI
+	//AutoPossessAI = EAutoPossessAI::Disabled;
+	AIControllerClass = nullptr;
+	bReplicates = false;
 }
 
 
@@ -52,12 +61,7 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	// set up gameplay key bindings
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProjStartupBall::MoveRight);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProjStartupBall::MoveForward);
-
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AProjStartupBall::Jump);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AProjStartupBall::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AProjStartupBall::TouchStopped);
 }
 
 void AProjStartupBall::MoveRight(float Val)
@@ -87,25 +91,4 @@ void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
 	bCanJump = true;
-}
-
-void AProjStartupBall::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	if (bCanJump)
-	{
-		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
-		Ball->AddImpulse(Impulse);
-		bCanJump = false;
-	}
-
-}
-
-void AProjStartupBall::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	if (bCanJump)
-	{
-		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
-		Ball->AddImpulse(Impulse);
-		bCanJump = false;
-	}
 }
