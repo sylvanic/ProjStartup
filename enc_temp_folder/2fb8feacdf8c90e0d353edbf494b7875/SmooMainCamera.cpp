@@ -6,7 +6,6 @@
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/Engine.h"
-#include "Engine/World.h"
 #include "ProjStartupGameMode.h"
 #include <vector>
 
@@ -38,27 +37,16 @@ void ASmooMainCamera::BeginPlay()
 {
 	Super::BeginPlay();
 
-	for (FConstPlayerControllerIterator pcIter = GetWorld()->GetPlayerControllerIterator(); pcIter; ++pcIter)
-	{
-		APlayerController* pc = Cast<APlayerController>(*pcIter);
-
-		pc->SetViewTargetWithBlend(this);
-	}
-
 	// Get a refernce to the game mode
-	//GameMode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
+	GameMode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
 
-	//std::vector<APawn*> players = GameMode->Players;
+	std::vector<APawn*> players = GameMode->Players;
 
 	//for (size_t i = 0; i < players.size(); i++)
 	//{
-
+	//	players.at(0);
 	//}
 	
-}
-
-void ASmooMainCamera::UpdateCamera(float time) {
-
 }
 
 // Called every frame

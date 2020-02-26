@@ -8,7 +8,6 @@
 #include "Misc/Timespan.h"
 #include "Templates/Casts.h"
 #include "SpawnArea.h"
-#include "SmooMainCamera.h"
 
 AProjStartupGameMode::AProjStartupGameMode()
 {
@@ -49,7 +48,5 @@ void AProjStartupGameMode::SpawnPlayers() {
 				existingController->Possess(player);
 			}
 		}
-
-		ASmooMainCamera* camera = GetWorld()->SpawnActor<ASmooMainCamera>(ASmooMainCamera::StaticClass(), playerStartPoints[0]->GetTransform());
 	}
 }

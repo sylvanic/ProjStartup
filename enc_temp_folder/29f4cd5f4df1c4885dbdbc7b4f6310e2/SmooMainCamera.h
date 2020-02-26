@@ -37,5 +37,4 @@ public:
 
 private:
 	AProjStartupGameMode* GameMode;
-	void UpdateCamera(float time);
 };
