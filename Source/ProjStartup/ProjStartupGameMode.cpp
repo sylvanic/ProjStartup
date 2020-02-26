@@ -34,7 +34,7 @@ void AProjStartupGameMode::SpawnPlayers() {
 		for (size_t i = 0; i < playerStartPoints.Num(); i++)
 		{
 			APlayerController* pc = UGameplayStatics::CreatePlayer(GetWorld(), i);
-			APawn* player = GetWorld()->SpawnActor<APawn>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
+			AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
 			Players.push_back(player);
 			if (pc != nullptr)
 			{

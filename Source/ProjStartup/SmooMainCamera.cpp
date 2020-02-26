@@ -5,16 +5,19 @@
 #include "GameFramework/SpringArmComponent.h"
 #include "Camera/CameraComponent.h"
 #include "Kismet/GameplayStatics.h"
+#include "Kismet/KismetMathLibrary.h"
 #include "Engine/Engine.h"
 #include "Engine/World.h"
 #include "ProjStartupGameMode.h"
+#include "ProjStartupBall.h"
+#include "TimerManager.h"
 #include <vector>
 
 
 // Sets default values
 ASmooMainCamera::ASmooMainCamera()
 {
- 	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
+	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
 	// Create a camera boom attached to the root (ball)
@@ -38,6 +41,8 @@ void ASmooMainCamera::BeginPlay()
 {
 	Super::BeginPlay();
 
+	GameMode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
+
 	for (FConstPlayerControllerIterator pcIter = GetWorld()->GetPlayerControllerIterator(); pcIter; ++pcIter)
 	{
 		APlayerController* pc = Cast<APlayerController>(*pcIter);
@@ -45,20 +50,42 @@ void ASmooMainCamera::BeginPlay()
 		pc->SetViewTargetWithBlend(this);
 	}
 
-	// Get a refernce to the game mode
-	//GameMode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
-
-	//std::vector<APawn*> players = GameMode->Players;
-
-	//for (size_t i = 0; i < players.size(); i++)
-	//{
-
-	//}
-	
+	GetWorld()->GetTimerManager().SetTimer(updateCameraHandle, this, &ASmooMainCamera::UpdateCamera, 0.01f, true);
 }
 
-void ASmooMainCamera::UpdateCamera(float time) {
+void ASmooMainCamera::UpdateCamera() {
 
+	float currentFarthestDistance = TNumericLimits<float>::Min();
+	FVector newPosition = FVector::ZeroVector;
+
+	std::vector<AProjStartupBall*> players = GameMode->Players;
+
+	for (int i = 0; i < players.size(); i++)
+	{
+		for (size_t y = i; y < players.size(); y++)
+		{
+			currentFarthestDistance = GetFarthestDistance(players, i, y, currentFarthestDistance);
+		}
+		// add all player positions together
+		newPosition += players.at(i)->GetActorLocation();
+	}
+	// get the average of all player positions
+	newPosition /= players.size();
+
+	// update the camera position based on the average position of all the players (smoothly)
+	SetActorLocation(UKismetMathLibrary::VLerp(GetActorLocation() ,newPosition, 0.01f));
+	// apply the distance from the players based on the distance of the players furthest from each other
+	SpringArm->TargetArmLength = FMath::Lerp(minDistance, maxDistance, currentFarthestDistance / maxDistance);
+}
+
+float ASmooMainCamera::GetFarthestDistance(std::vector<AProjStartupBall*> players, int x, int y, float currentFarthestDistance) {
+	float distance = FVector::Dist(players.at(x)->GetActorLocation(), players.at(y)->GetActorLocation());
+	if (distance > currentFarthestDistance)
+	{
+		currentFarthestDistance = distance;
+
+	}
+	return currentFarthestDistance;
 }
 
 // Called every frame

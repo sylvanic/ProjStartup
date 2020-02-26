@@ -18,6 +18,15 @@ class PROJSTARTUP_API ASmooMainCamera : public AActor
 	/** Camera to view the ball */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ball, meta = (AllowPrivateAccess = "true"))
 	class UCameraComponent* Camera;
+
+	UFUNCTION()
+	void UpdateCamera();
+
+	UPROPERTY(EditAnywhere)
+	float minDistance = 1500.0f;
+
+	UPROPERTY(EditAnywhere)
+	float maxDistance = 5000.0f;
 	
 public:	
 	// Sets default values for this actor's properties
@@ -37,5 +46,8 @@ public:
 
 private:
 	AProjStartupGameMode* GameMode;
-	void UpdateCamera(float time);
+
+	FTimerHandle updateCameraHandle;
+
+	float GetFarthestDistance(std::vector<AProjStartupBall*> players, int x, int y, float currentFarthestDistance);
 };
