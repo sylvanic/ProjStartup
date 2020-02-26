@@ -7,6 +7,7 @@
 #include "GameFramework/PlayerStart.h"
 #include "Misc/Timespan.h"
 #include "Templates/Casts.h"
+#include "SpawnArea.h"
 
 AProjStartupGameMode::AProjStartupGameMode()
 {
@@ -24,7 +25,7 @@ void AProjStartupGameMode::BeginPlay() {
 
 void AProjStartupGameMode::SpawnPlayers() {
 	TArray<AActor*> playerStartPoints;
-	UGameplayStatics::GetAllActorsOfClass(GetWorld(), APlayerStart::StaticClass(), playerStartPoints);
+	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnArea::StaticClass(), playerStartPoints);
 
 	UE_LOG(LogTemp, Warning, TEXT("ps size: %i"), playerStartPoints.Num());
 	if (playerStartPoints.Num() > 0)
@@ -33,9 +34,18 @@ void AProjStartupGameMode::SpawnPlayers() {
 		{
 			APlayerController* pc = UGameplayStatics::CreatePlayer(GetWorld(), i);
 			APawn* player = GetWorld()->SpawnActor<APawn>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
+			Players.push_back(player);
 			if (pc != nullptr)
 			{
 				pc->Possess(player);
+			}
+			else
+			{
+				UE_LOG(LogTemp, Warning, TEXT("player controller already exists: %i"), i);
+				UE_LOG(LogTemp, Warning, TEXT("Assigning player controller %i to player %i"), i, i);
+
+				APlayerController* existingController = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), i);
+				existingController->Possess(player);
 			}
 		}
 	}

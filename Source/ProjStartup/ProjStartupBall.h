@@ -15,14 +15,6 @@ class AProjStartupBall : public APawn
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ball, meta = (AllowPrivateAccess = "true"))
 	class UStaticMeshComponent* Ball;
 
-	/** Spring arm for positioning the camera above the ball */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ball, meta = (AllowPrivateAccess = "true"))
-	class USpringArmComponent* SpringArm;
-
-	/** Camera to view the ball */
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ball, meta = (AllowPrivateAccess = "true"))
-	class UCameraComponent* Camera;
-
 public:
 	AProjStartupBall();
 
@@ -36,9 +28,6 @@ public:
 
 	/** Indicates whether we can currently jump, use to prevent double jumping */
 	bool bCanJump;
-
-	UPROPERTY(EditAnywhere, Category = Ball)
-	int playerIndex = 0;
 
 protected:
 
@@ -62,8 +51,4 @@ protected:
 public:
 	/** Returns Ball subobject **/
 	FORCEINLINE class UStaticMeshComponent* GetBall() const { return Ball; }
-	/** Returns SpringArm subobject **/
-	FORCEINLINE class USpringArmComponent* GetSpringArm() const { return SpringArm; }
-	/** Returns Camera subobject **/
-	FORCEINLINE class UCameraComponent* GetCamera() const { return Camera; }
 };

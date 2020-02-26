@@ -15,14 +15,8 @@ public:
 	AProjStartupGameMode();
 	virtual void BeginPlay() override;
 	
-	std::vector<AProjStartupBall*> players;
-
-	UPROPERTY()
-	int maxPlayerCount = 4;
-
+	std::vector<APawn*> Players;
 private:
 	void SpawnPlayers();
 };
-
-
 

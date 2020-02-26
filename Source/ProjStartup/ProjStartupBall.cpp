@@ -2,10 +2,8 @@
 
 #include "ProjStartupBall.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
-#include "GameFramework/SpringArmComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
@@ -25,23 +23,6 @@ AProjStartupBall::AProjStartupBall()
 	Ball->BodyInstance.MaxAngularVelocity = 800.0f;
 	Ball->SetNotifyRigidBodyCollision(true);
 	RootComponent = Ball;
-
-	// Create a camera boom attached to the root (ball)
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
-	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->bDoCollisionTest = false;
-	SpringArm->SetUsingAbsoluteRotation(true); // Rotation of the ball should not affect rotation of boom
-	SpringArm->SetRelativeRotation(FRotator(-45.f, 0.f, 0.f));
-	SpringArm->TargetArmLength = 1200.f;
-	SpringArm->bEnableCameraLag = false;
-	SpringArm->CameraLagSpeed = 3.f;
-
-	// Create a camera and attach to boom
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	Camera->bUsePawnControlRotation = false; // We don't want the controller rotating the camera
-	Camera->PostProcessSettings.AutoExposureMinBrightness = 1.0f;
-	Camera->PostProcessSettings.AutoExposureMaxBrightness = 2.0f;
 
 	// Set up forces
 	Ball->SetMassOverrideInKg("Ball", 0.5f, true);
