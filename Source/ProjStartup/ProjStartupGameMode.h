@@ -1,11 +1,11 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
+#include "ProjStartupBall.h"
+#include <vector>
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
 #include "ProjStartupGameMode.generated.h"
-
 UCLASS(minimalapi)
 class AProjStartupGameMode : public AGameModeBase
 {
@@ -13,7 +13,10 @@ class AProjStartupGameMode : public AGameModeBase
 
 public:
 	AProjStartupGameMode();
+	virtual void BeginPlay() override;
+	
+	std::vector<APawn*> Players;
+private:
+	void SpawnPlayers();
 };
-
-
 

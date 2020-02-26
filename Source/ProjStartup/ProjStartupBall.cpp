@@ -2,16 +2,15 @@
 
 #include "ProjStartupBall.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Camera/CameraComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "Components/InputComponent.h"
-#include "GameFramework/SpringArmComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
 
 AProjStartupBall::AProjStartupBall()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BallMesh(TEXT("/Game/Rolling/Meshes/BallMesh.BallMesh"));
+	static ConstructorHelpers::FObjectFinder<UStaticMesh> BallMesh(TEXT("/Game/Meshes/1M_Cube"));
 
 	// Create mesh component for the ball
 	Ball = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ball0"));
@@ -25,25 +24,16 @@ AProjStartupBall::AProjStartupBall()
 	Ball->SetNotifyRigidBodyCollision(true);
 	RootComponent = Ball;
 
-	// Create a camera boom attached to the root (ball)
-	SpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("SpringArm0"));
-	SpringArm->SetupAttachment(RootComponent);
-	SpringArm->bDoCollisionTest = false;
-	SpringArm->SetUsingAbsoluteRotation(true); // Rotation of the ball should not affect rotation of boom
-	SpringArm->SetRelativeRotation(FRotator(-45.f, 0.f, 0.f));
-	SpringArm->TargetArmLength = 1200.f;
-	SpringArm->bEnableCameraLag = false;
-	SpringArm->CameraLagSpeed = 3.f;
-
-	// Create a camera and attach to boom
-	Camera = CreateDefaultSubobject<UCameraComponent>(TEXT("Camera0"));
-	Camera->SetupAttachment(SpringArm, USpringArmComponent::SocketName);
-	Camera->bUsePawnControlRotation = false; // We don't want the controller rotating the camera
-
 	// Set up forces
-	RollTorque = 50000000.0f;
-	JumpImpulse = 350000.0f;
+	Ball->SetMassOverrideInKg("Ball", 0.5f, true);
+	RollTorque = 50000.0f;
+	JumpImpulse = 300.0f;
 	bCanJump = true; // Start being able to jump
+
+	//disable AI
+	//AutoPossessAI = EAutoPossessAI::Disabled;
+	AIControllerClass = nullptr;
+	bReplicates = false;
 }
 
 
@@ -52,12 +42,7 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	// set up gameplay key bindings
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProjStartupBall::MoveRight);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProjStartupBall::MoveForward);
-
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AProjStartupBall::Jump);
-
-	// handle touch devices
-	PlayerInputComponent->BindTouch(IE_Pressed, this, &AProjStartupBall::TouchStarted);
-	PlayerInputComponent->BindTouch(IE_Released, this, &AProjStartupBall::TouchStopped);
 }
 
 void AProjStartupBall::MoveRight(float Val)
@@ -87,25 +72,4 @@ void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 
 	bCanJump = true;
-}
-
-void AProjStartupBall::TouchStarted(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	if (bCanJump)
-	{
-		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
-		Ball->AddImpulse(Impulse);
-		bCanJump = false;
-	}
-
-}
-
-void AProjStartupBall::TouchStopped(ETouchIndex::Type FingerIndex, FVector Location)
-{
-	if (bCanJump)
-	{
-		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
-		Ball->AddImpulse(Impulse);
-		bCanJump = false;
-	}
 }
