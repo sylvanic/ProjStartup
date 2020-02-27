@@ -32,14 +32,14 @@ AProjStartupBall::AProjStartupBall()
 
 	//Create sphere collider
 	sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
-	sphere->InitSphereRadius(800.0f);
+	sphere->InitSphereRadius(100.0f);
 	sphere->SetupAttachment(RootComponent);
 
 	// Set up forces
 	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	//Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	Ball->SetMassOverrideInKg("Ball", 0.5f, true);
+	Ball->SetMassOverrideInKg("Ball", 100.0f, true);
 	RollTorque = 50000000.0f;
 	AirTorque = 500000.0f;
 	JumpImpulse = 300.0f;

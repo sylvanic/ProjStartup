@@ -24,8 +24,8 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void SetPlayer(AActor* player);
-	bool isAttracting = false;
-	bool isSticked = false;
+	bool isAttracting;
+	bool isSticked;
 
 private:
 	AActor* player;
