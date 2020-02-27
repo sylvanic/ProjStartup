@@ -4,6 +4,7 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
+#include "Components/SphereComponent.h"
 #include "ProjStartupBall.generated.h"
 
 UCLASS(config=Game)
@@ -32,6 +33,9 @@ public:
 	/** Indicates whether we can currently jump, use to prevent double jumping */
 	bool bCanJump;
 
+	// Called every frame
+	virtual void Tick(float DeltaTime) override;
+
 protected:
 
 	/** Called for side to side input */
@@ -56,6 +60,9 @@ public:
 	FORCEINLINE class USkeletalMeshComponent* GetBall() const { return Ball; }
 
 private:
+
+	USphereComponent* sphere;
+
 
 	float currentTorque;
 };

@@ -7,7 +7,12 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
+
+#include "PickableObject.h"
+#include "Engine.h"
+
 #include "PhysicalMaterials/PhysicalMaterial.h"
+
 
 AProjStartupBall::AProjStartupBall()
 {
@@ -25,6 +30,11 @@ AProjStartupBall::AProjStartupBall()
 	Ball->SetNotifyRigidBodyCollision(true);
 	RootComponent = Ball;
 
+	//Create sphere collider
+	sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
+	sphere->InitSphereRadius(800.0f);
+	sphere->SetupAttachment(RootComponent);
+
 	// Set up forces
 	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	//Ball->SetPhysMaterialOverride(SmooPhysics.Object);
@@ -35,10 +45,51 @@ AProjStartupBall::AProjStartupBall()
 	JumpImpulse = 300.0f;
 	bCanJump = true; // Start being able to jump
 
+
 	//disable AI
 	//AutoPossessAI = EAutoPossessAI::Disabled;
 	AIControllerClass = nullptr;
 	bReplicates = false;
+}
+
+// Called every frame
+void AProjStartupBall::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+
+	TArray<AActor*> overlappingActorsSphere;
+	sphere->GetOverlappingActors(overlappingActorsSphere);
+
+
+	for (int32 ActorIndex = 0; ActorIndex < overlappingActorsSphere.Num(); ActorIndex++)
+	{
+		APickableObject* object = Cast<APickableObject>(overlappingActorsSphere[ActorIndex]);
+		if (object)
+		{
+			if (!object->isAttracting)
+			{
+				object->SetPlayer(this);
+			}
+		}
+	}
+
+	TArray<AActor*> overlappingActors;
+	Ball->GetOverlappingActors(overlappingActors);
+	for (int32 ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
+	{
+		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
+		if (object)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(object->GetName()));
+
+			object->isSticked = true;
+			object->AttachToComponent(RootComponent, FAttachmentTransformRules::KeepWorldTransform);
+		}
+	}
+
+
+
 }
 
 
