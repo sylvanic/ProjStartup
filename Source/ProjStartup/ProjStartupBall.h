@@ -27,6 +27,9 @@ public:
 	UPROPERTY(EditAnywhere, Category=Ball)
 	float RollTorque;
 
+	UPROPERTY(EditAnywhere, Category=Ball)
+	float AirTorque;
+
 	/** Indicates whether we can currently jump, use to prevent double jumping */
 	bool bCanJump;
 
@@ -57,5 +60,9 @@ public:
 	FORCEINLINE class UStaticMeshComponent* GetBall() const { return Ball; }
 
 private:
+
 	USphereComponent* sphere;
+
+
+	float currentTorque;
 };

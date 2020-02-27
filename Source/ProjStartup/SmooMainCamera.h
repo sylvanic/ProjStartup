@@ -23,7 +23,7 @@ class PROJSTARTUP_API ASmooMainCamera : public AActor
 	void UpdateCamera();
 
 	UPROPERTY(EditAnywhere)
-	float minDistance = 1500.0f;
+	float minDistance = 700.0f;
 
 	UPROPERTY(EditAnywhere)
 	float maxDistance = 5000.0f;
