@@ -7,6 +7,7 @@
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
+#include "PhysicalMaterials/PhysicalMaterial.h"
 
 AProjStartupBall::AProjStartupBall()
 {
@@ -25,8 +26,12 @@ AProjStartupBall::AProjStartupBall()
 	RootComponent = Ball;
 
 	// Set up forces
+	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
+	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
+
 	Ball->SetMassOverrideInKg("Ball", 0.5f, true);
 	RollTorque = 50000.0f;
+	AirTorque = 5000.0f;
 	JumpImpulse = 300.0f;
 	bCanJump = true; // Start being able to jump
 
@@ -47,13 +52,13 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	const FVector Torque = FVector(-1.f * Val * RollTorque, 0.f, 0.f);
+	const FVector Torque = FVector(-1.f * Val * currentTorque, 0.f, 0.f);
 	Ball->AddTorqueInRadians(Torque);
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	const FVector Torque = FVector(0.f, Val * RollTorque, 0.f);
+	const FVector Torque = FVector(0.f, Val * currentTorque, 0.f);
 	Ball->AddTorqueInRadians(Torque);	
 }
 
@@ -63,6 +68,7 @@ void AProjStartupBall::Jump()
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
 		Ball->AddImpulse(Impulse);
+		currentTorque = AirTorque;
 		bCanJump = false;
 	}
 }
@@ -70,6 +76,6 @@ void AProjStartupBall::Jump()
 void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-
+	currentTorque = RollTorque;
 	bCanJump = true;
 }
