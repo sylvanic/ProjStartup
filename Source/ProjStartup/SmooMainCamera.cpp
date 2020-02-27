@@ -54,6 +54,10 @@ void ASmooMainCamera::BeginPlay()
 }
 
 void ASmooMainCamera::UpdateCamera() {
+	if (GameMode->HasInitialized == false)
+	{
+		return;
+	}
 
 	float currentFarthestDistance = TNumericLimits<float>::Min();
 	FVector newPosition = FVector::ZeroVector;
@@ -71,11 +75,13 @@ void ASmooMainCamera::UpdateCamera() {
 	}
 	// get the average of all player positions
 	newPosition /= players.size();
+	// move the camera a bit lower so we don't lose track of the player who's closest to the camera
+	newPosition += FVector::BackwardVector * 500.0f;
 
 	// update the camera position based on the average position of all the players (smoothly)
-	SetActorLocation(UKismetMathLibrary::VLerp(GetActorLocation() ,newPosition, 0.01f));
+	SetActorLocation(UKismetMathLibrary::VLerp(GetActorLocation(), newPosition, 0.02f));
 	// apply the distance from the players based on the distance of the players furthest from each other
-	SpringArm->TargetArmLength = FMath::Lerp(minDistance, maxDistance, currentFarthestDistance / maxDistance);
+	SpringArm->TargetArmLength = FMath::Lerp(minDistance, maxDistance, currentFarthestDistance / (maxDistance - maxDistance/3.0f));
 }
 
 float ASmooMainCamera::GetFarthestDistance(std::vector<AProjStartupBall*> players, int x, int y, float currentFarthestDistance) {
@@ -83,8 +89,8 @@ float ASmooMainCamera::GetFarthestDistance(std::vector<AProjStartupBall*> player
 	if (distance > currentFarthestDistance)
 	{
 		currentFarthestDistance = distance;
-
 	}
+
 	return currentFarthestDistance;
 }
 

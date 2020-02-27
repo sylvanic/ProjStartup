@@ -2,7 +2,7 @@
 
 #include "ProjStartupBall.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Components/StaticMeshComponent.h"
+#include "Components/SkeletalMeshComponent.h"
 #include "Components/InputComponent.h"
 #include "GameFramework/CharacterMovementComponent.h"
 #include "Engine/CollisionProfile.h"
@@ -11,11 +11,11 @@
 
 AProjStartupBall::AProjStartupBall()
 {
-	static ConstructorHelpers::FObjectFinder<UStaticMesh> BallMesh(TEXT("/Game/Meshes/1M_Cube"));
+	static ConstructorHelpers::FObjectFinder<USkeletalMesh> BallMesh(TEXT("/Game/Meshes/TestPlayer"));
 
 	// Create mesh component for the ball
-	Ball = CreateDefaultSubobject<UStaticMeshComponent>(TEXT("Ball0"));
-	Ball->SetStaticMesh(BallMesh.Object);
+	Ball = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Ball0"));
+	Ball->SetSkeletalMesh(BallMesh.Object);
 	Ball->BodyInstance.SetCollisionProfileName(UCollisionProfile::PhysicsActor_ProfileName);
 	Ball->SetSimulatePhysics(true);
 	Ball->SetAngularDamping(0.1f);
@@ -26,12 +26,12 @@ AProjStartupBall::AProjStartupBall()
 	RootComponent = Ball;
 
 	// Set up forces
-	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
-	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
+	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
+	//Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
 	Ball->SetMassOverrideInKg("Ball", 0.5f, true);
-	RollTorque = 50000.0f;
-	AirTorque = 5000.0f;
+	RollTorque = 50000000.0f;
+	AirTorque = 500000.0f;
 	JumpImpulse = 300.0f;
 	bCanJump = true; // Start being able to jump
 
@@ -59,12 +59,12 @@ void AProjStartupBall::MoveRight(float Val)
 void AProjStartupBall::MoveForward(float Val)
 {
 	const FVector Torque = FVector(0.f, Val * currentTorque, 0.f);
-	Ball->AddTorqueInRadians(Torque);	
+	Ball->AddTorqueInRadians(Torque);
 }
 
 void AProjStartupBall::Jump()
 {
-	if(bCanJump)
+	if (bCanJump)
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
 		Ball->AddImpulse(Impulse);
@@ -78,4 +78,6 @@ void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
 	currentTorque = RollTorque;
 	bCanJump = true;
+	UE_LOG(LogTemp, Warning, TEXT("Collision with ground!"));
+
 }

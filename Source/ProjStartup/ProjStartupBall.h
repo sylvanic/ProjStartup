@@ -1,7 +1,7 @@
 // Copyright 1998-2019 Epic Games, Inc. All Rights Reserved.
 
 #pragma once
-
+#include "Components/SkeletalMeshComponent.h"
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "ProjStartupBall.generated.h"
@@ -13,7 +13,7 @@ class AProjStartupBall : public APawn
 
 	/** StaticMesh used for the ball */
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly, Category = Ball, meta = (AllowPrivateAccess = "true"))
-	class UStaticMeshComponent* Ball;
+	class USkeletalMeshComponent* Ball;
 
 public:
 	AProjStartupBall();
@@ -53,7 +53,7 @@ protected:
 
 public:
 	/** Returns Ball subobject **/
-	FORCEINLINE class UStaticMeshComponent* GetBall() const { return Ball; }
+	FORCEINLINE class USkeletalMeshComponent* GetBall() const { return Ball; }
 
 private:
 

@@ -16,6 +16,8 @@ public:
 	virtual void BeginPlay() override;
 	
 	std::vector<AProjStartupBall*> Players;
+
+	bool HasInitialized = false;
 private:
 	void SpawnPlayers();
 };

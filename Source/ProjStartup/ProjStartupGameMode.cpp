@@ -22,11 +22,13 @@ void AProjStartupGameMode::BeginPlay() {
 	Super::BeginPlay();
 
 	SpawnPlayers();
+	HasInitialized = true;
 }
 
 void AProjStartupGameMode::SpawnPlayers() {
 	TArray<AActor*> playerStartPoints;
 	UGameplayStatics::GetAllActorsOfClass(GetWorld(), ASpawnArea::StaticClass(), playerStartPoints);
+	Players = std::vector<AProjStartupBall*>();
 
 	UE_LOG(LogTemp, Warning, TEXT("ps size: %i"), playerStartPoints.Num());
 	if (playerStartPoints.Num() > 0)
@@ -35,7 +37,11 @@ void AProjStartupGameMode::SpawnPlayers() {
 		{
 			APlayerController* pc = UGameplayStatics::CreatePlayer(GetWorld(), i);
 			AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
-			Players.push_back(player);
+			if (player != nullptr)
+			{
+				Players.push_back(player);
+			}
+
 			if (pc != nullptr)
 			{
 				pc->Possess(player);
