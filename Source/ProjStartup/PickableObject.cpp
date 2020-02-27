@@ -27,11 +27,12 @@ void APickableObject::Tick(float DeltaTime)
 	if (isAttracting && !isSticked)
 	{
 		FVector direction = player->GetActorLocation() - GetActorLocation();
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(direction.Size()));
+		
 
 		SetActorLocation(GetActorLocation() + (direction * velocity));
 		velocity += 0.005f;
 	}
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isSticked));
 }
 
 void APickableObject::SetPlayer(AActor* playerP)
