@@ -31,11 +31,11 @@ AProjStartupBall::AProjStartupBall()
 
 	//Create sphere collider
 	sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
-	sphere->InitSphereRadius(400.0f);
+	sphere->InitSphereRadius(200.0f);
 	sphere->SetupAttachment(RootComponent);
 
 	sphere2 = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider2"));
-	sphere2->InitSphereRadius(60);
+	sphere2->InitSphereRadius(50);
 	sphere2->SetupAttachment(RootComponent);
 
 	// Set up forces
@@ -78,25 +78,23 @@ void AProjStartupBall::Tick(float DeltaTime)
 	}
 
 	TArray<AActor*> overlappingActors;
+
 	sphere2->GetOverlappingActors(overlappingActors);
 	for (int32 ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(overlappingActors[ActorIndex]->GetName()));
 
 		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
+
 		if (object)
 		{
+
 			if (!object->isSticked)
 			{
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(object->GetName()));
 				attachedActors.Add(object);
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(object->GetName()));
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
 				object->isSticked = true;
 				object->AttachToComponent(Ball, FAttachmentTransformRules::KeepWorldTransform);
-				//for (UStaticMesh* Component : object->GetComponentByClass(UB)
-				//{
-				//	Component->SetSimulatePhysics(false);
-				//}
-				//object->staticme
 			}
 		}
 	}
@@ -137,12 +135,28 @@ void AProjStartupBall::Jump()
 
 void AProjStartupBall::Attack()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
 	for (int32 ActorIndex = 0; ActorIndex < attachedActors.Num(); ActorIndex++)
 	{
 		APickableObject* object = attachedActors[ActorIndex];
 		object->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+		TArray<UStaticMeshComponent*> staticComps;
+		object->GetComponents<UStaticMeshComponent>(staticComps);
+
+		for (int32 ActorIndex2 = 0; ActorIndex2 < 1; ActorIndex2++)
+		{
+			UStaticMeshComponent* staticComp = staticComps[ActorIndex2];
+			staticComp->SetSimulatePhysics(true);
+			staticComp->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+			staticComp->AddImpulse(GetVelocity() / 2.0f);
+		}
+		object->isAttracting = false;
+		object->launched = true;
+
 	}
+	attachedActors.Empty();
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
+
 }
 
 

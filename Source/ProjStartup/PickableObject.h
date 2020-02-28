@@ -4,6 +4,8 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
+#include "Components/SphereComponent.h"
+#include "MapObject.h"
 #include "PickableObject.generated.h"
 
 UCLASS()
@@ -24,11 +26,16 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	void SetPlayer(AActor* player);
-	bool isAttracting = false;
-	bool isSticked = false;
+	bool isAttracting;
+	bool isSticked;
+	bool launched;
 
 private:
 	AActor* player;
 	float velocity;
+	float timerDelay;
+	USphereComponent* sphereComponent;
 
+	UFUNCTION()
+	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
