@@ -31,7 +31,7 @@ AProjStartupBall::AProjStartupBall()
 
 	//Create sphere collider
 	sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
-	sphere->InitSphereRadius(200.0f);
+	sphere->InitSphereRadius(100.0f);
 	sphere->SetupAttachment(RootComponent);
 
 	sphere2 = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider2"));
@@ -63,10 +63,8 @@ void AProjStartupBall::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-
 	TArray<AActor*> overlappingActorsSphere;
 	sphere->GetOverlappingActors(overlappingActorsSphere);
-
 
 	for (size_t ActorIndex = 0; ActorIndex < overlappingActorsSphere.Num(); ActorIndex++)
 	{
@@ -82,21 +80,13 @@ void AProjStartupBall::Tick(float DeltaTime)
 
 	TArray<AActor*> overlappingActors;
 
-
 	sphere2->GetOverlappingActors(overlappingActors);
-	for (int32 ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
-
-	Ball->GetOverlappingActors(overlappingActors);
 	for (size_t ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
-
-
-	{
 	{
 		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
 
 		if (object)
 		{
-
 			if (!object->isSticked)
 			{
 				attachedActors.Add(object);
@@ -108,7 +98,6 @@ void AProjStartupBall::Tick(float DeltaTime)
 		}
 	}
 }
-
 
 void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
 {

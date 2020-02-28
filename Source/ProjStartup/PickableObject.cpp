@@ -2,18 +2,14 @@
 
 
 #include "PickableObject.h"
-#include "Editor.h"
-#include "D:/Programs/Epic Games/UE_4.24/Engine/Plugins/Runtime/ApexDestruction/Source/ApexDestructionEditor/Private/SDestructibleMeshEditorViewport.h"
-
+//#include "Editor.h"	
+//#include "DestructibleComponent.h"
 
 // Sets default values
 APickableObject::APickableObject()
 {
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
-
-
-
 }
 
 // Called when the game starts or when spawned
@@ -29,9 +25,7 @@ void APickableObject::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(sphereComponent->GetName()));
 	}
 
-
 	attractionSpeed = 0.08f;
-	
 }
 
 // Called every frame
