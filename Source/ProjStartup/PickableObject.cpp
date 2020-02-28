@@ -16,6 +16,7 @@ APickableObject::APickableObject()
 void APickableObject::BeginPlay()
 {
 	Super::BeginPlay();
+	attractionSpeed = 0.08f;
 	
 }
 
@@ -29,8 +30,7 @@ void APickableObject::Tick(float DeltaTime)
 		FVector direction = player->GetActorLocation() - GetActorLocation();
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(direction.Size()));
 
-		SetActorLocation(GetActorLocation() + (direction * velocity));
-		velocity += 0.005f;
+		SetActorLocation(GetActorLocation() + (direction * attractionSpeed));
 	}
 }
 

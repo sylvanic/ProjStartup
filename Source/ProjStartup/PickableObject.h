@@ -29,5 +29,5 @@ public:
 
 private:
 	AActor* player;
-	float velocity;
+	float attractionSpeed;
 };
