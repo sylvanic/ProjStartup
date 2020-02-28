@@ -20,6 +20,7 @@ APickableObject::APickableObject()
 void APickableObject::BeginPlay()
 {
 	Super::BeginPlay();
+
 	sphereComponent = FindComponentByClass<USphereComponent>();
 
 	if (sphereComponent != nullptr)
@@ -28,6 +29,8 @@ void APickableObject::BeginPlay()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(sphereComponent->GetName()));
 	}
 
+
+	attractionSpeed = 0.08f;
 	
 }
 
@@ -41,8 +44,7 @@ void APickableObject::Tick(float DeltaTime)
 		FVector direction = player->GetActorLocation() - GetActorLocation();
 		
 
-		SetActorLocation(GetActorLocation() + (direction * velocity));
-		velocity += 0.005f;
+		SetActorLocation(GetActorLocation() + (direction * attractionSpeed));
 	}
 	
 	if (launched)

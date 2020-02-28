@@ -42,10 +42,12 @@ AProjStartupBall::AProjStartupBall()
 	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	//Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	Ball->SetMassOverrideInKg("Ball", 100.0f, true);
-	RollTorque = 50000000.0f;
-	AirTorque = 500000.0f;
-	JumpImpulse = 300.0f;
+	Ball->SetMassOverrideInKg("Ball", 1000.0f, true);
+	Ball->Density = 10.0f;
+	Ball->bLocalSpaceSimulation = true;
+	RollTorque = 150.0f;
+	AirTorque = 150.0f;
+	JumpImpulse = 3000.0f;
 	bCanJump = true; // Start being able to jump
 
 
@@ -65,7 +67,7 @@ void AProjStartupBall::Tick(float DeltaTime)
 	sphere->GetOverlappingActors(overlappingActorsSphere);
 
 
-	for (int32 ActorIndex = 0; ActorIndex < overlappingActorsSphere.Num(); ActorIndex++)
+	for (size_t ActorIndex = 0; ActorIndex < overlappingActorsSphere.Num(); ActorIndex++)
 	{
 		APickableObject* object = Cast<APickableObject>(overlappingActorsSphere[ActorIndex]);
 		if (object)
@@ -79,8 +81,13 @@ void AProjStartupBall::Tick(float DeltaTime)
 
 	TArray<AActor*> overlappingActors;
 
+
 	sphere2->GetOverlappingActors(overlappingActors);
 	for (int32 ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
+
+	Ball->GetOverlappingActors(overlappingActors);
+	for (size_t ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
+
 	{
 
 		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
@@ -112,14 +119,16 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	const FVector Torque = FVector(-1.f * Val * currentTorque, 0.f, 0.f);
-	Ball->AddTorqueInRadians(Torque);
+	const FVector Torque = FVector(0.f, Val * currentTorque, 0.f);
+	Ball->AddImpulse(Torque);
+	//Ball->AddTorqueInRadians(Torque);
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	const FVector Torque = FVector(0.f, Val * currentTorque, 0.f);
-	Ball->AddTorqueInRadians(Torque);
+	const FVector Torque = FVector(Val * currentTorque, 0.f, 0.f);
+	Ball->AddImpulse(Torque);
+	//Ball->AddTorqueInRadians(Torque);
 }
 
 void AProjStartupBall::Jump()
