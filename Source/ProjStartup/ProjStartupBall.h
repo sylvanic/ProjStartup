@@ -26,13 +26,17 @@ public:
 
 	/** Torque to apply when trying to roll ball */
 	UPROPERTY(EditAnywhere, Category=Ball)
-	float RollTorque;
+	float GroundSpeed;
 
 	UPROPERTY(EditAnywhere, Category=Ball)
-	float AirTorque;
+	float AirSpeed;
 
 	/** Indicates whether we can currently jump, use to prevent double jumping */
+	UPROPERTY(EditAnywhere, Category = Ball)
 	bool bCanJump;
+
+	UPROPERTY(EditAnywhere, Category = Ball)
+	float MaxSpeed;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -68,6 +72,5 @@ private:
 	USphereComponent* sphere2;
 	TArray<APickableObject*> attachedActors;
 
-
-	float currentTorque;
+	float currentSpeed;
 };
