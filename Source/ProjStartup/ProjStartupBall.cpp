@@ -8,7 +8,6 @@
 #include "Engine/CollisionProfile.h"
 #include "Engine/StaticMesh.h"
 
-#include "PickableObject.h"
 #include "Engine.h"
 
 #include "PhysicalMaterials/PhysicalMaterial.h"
@@ -21,7 +20,7 @@ AProjStartupBall::AProjStartupBall()
 	// Create mesh component for the ball
 	Ball = CreateDefaultSubobject<USkeletalMeshComponent>(TEXT("Ball0"));
 	Ball->SetSkeletalMesh(BallMesh.Object);
-	Ball->BodyInstance.SetCollisionProfileName(UCollisionProfile::PhysicsActor_ProfileName);
+	Ball->BodyInstance.SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 	Ball->SetSimulatePhysics(true);
 	Ball->SetAngularDamping(0.1f);
 	Ball->SetLinearDamping(0.1f);
@@ -32,8 +31,12 @@ AProjStartupBall::AProjStartupBall()
 
 	//Create sphere collider
 	sphere = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider"));
-	sphere->InitSphereRadius(100.0f);
+	sphere->InitSphereRadius(400.0f);
 	sphere->SetupAttachment(RootComponent);
+
+	sphere2 = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider2"));
+	sphere2->InitSphereRadius(60);
+	sphere2->SetupAttachment(RootComponent);
 
 	// Set up forces
 	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
@@ -79,19 +82,28 @@ void AProjStartupBall::Tick(float DeltaTime)
 	TArray<AActor*> overlappingActors;
 	Ball->GetOverlappingActors(overlappingActors);
 	for (size_t ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
+
+
 	{
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(overlappingActors[ActorIndex]->GetName()));
+
 		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
 		if (object)
 		{
-			//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(object->GetName()));
-
-			object->isSticked = true;
-			object->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetNotIncludingScale);
+			if (!object->isSticked)
+			{
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(object->GetName()));
+				attachedActors.Add(object);
+				object->isSticked = true;
+				object->AttachToComponent(Ball, FAttachmentTransformRules::KeepWorldTransform);
+				//for (UStaticMesh* Component : object->GetComponentByClass(UB)
+				//{
+				//	Component->SetSimulatePhysics(false);
+				//}
+				//object->staticme
+			}
 		}
 	}
-
-
-
 }
 
 
@@ -101,6 +113,7 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAxis("MoveRight", this, &AProjStartupBall::MoveRight);
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProjStartupBall::MoveForward);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AProjStartupBall::Jump);
+	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AProjStartupBall::Attack);
 }
 
 void AProjStartupBall::MoveRight(float Val)
@@ -127,6 +140,17 @@ void AProjStartupBall::Jump()
 		bCanJump = false;
 	}
 }
+
+void AProjStartupBall::Attack()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
+	for (int32 ActorIndex = 0; ActorIndex < attachedActors.Num(); ActorIndex++)
+	{
+		APickableObject* object = attachedActors[ActorIndex];
+		object->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+	}
+}
+
 
 void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {

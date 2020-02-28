@@ -30,4 +30,5 @@ public:
 private:
 	AActor* player;
 	float attractionSpeed;
+
 };
