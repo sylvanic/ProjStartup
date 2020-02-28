@@ -42,12 +42,13 @@ AProjStartupBall::AProjStartupBall()
 	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	//Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	Ball->SetMassOverrideInKg("Ball", 1000.0f, true);
-	Ball->Density = 10.0f;
+	Ball->SetMassOverrideInKg("Smoo", 100.0f, true);
+	Ball->Density = 1.0f;
 	Ball->bLocalSpaceSimulation = true;
-	RollTorque = 150.0f;
-	AirTorque = 150.0f;
-	JumpImpulse = 3000.0f;
+	GroundSpeed = 90.0f;
+	AirSpeed = 90.0f;
+	JumpImpulse = 30.0f;
+	MaxSpeed = 450.0f;
 	bCanJump = true; // Start being able to jump
 
 
@@ -88,8 +89,9 @@ void AProjStartupBall::Tick(float DeltaTime)
 	Ball->GetOverlappingActors(overlappingActors);
 	for (size_t ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
 
-	{
 
+	{
+	{
 		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
 
 		if (object)
@@ -119,16 +121,20 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	const FVector Torque = FVector(0.f, Val * currentTorque, 0.f);
-	Ball->AddImpulse(Torque);
-	//Ball->AddTorqueInRadians(Torque);
+	if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
+	{
+		const FVector Speed = FVector(0.f, Val * currentSpeed, 0.f);
+		Ball->AddImpulse(Speed);
+	}
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	const FVector Torque = FVector(Val * currentTorque, 0.f, 0.f);
-	Ball->AddImpulse(Torque);
-	//Ball->AddTorqueInRadians(Torque);
+	if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
+	{
+		const FVector Torque = FVector(Val * currentSpeed, 0.f, 0.f);
+		Ball->AddImpulse(Torque);
+	}
 }
 
 void AProjStartupBall::Jump()
@@ -137,8 +143,8 @@ void AProjStartupBall::Jump()
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
 		Ball->AddImpulse(Impulse);
-		currentTorque = AirTorque;
-		bCanJump = false;
+		currentSpeed = AirSpeed;
+		//bCanJump = false;
 	}
 }
 
@@ -172,8 +178,7 @@ void AProjStartupBall::Attack()
 void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
 {
 	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-	currentTorque = RollTorque;
+	currentSpeed = GroundSpeed;
 	bCanJump = true;
 	UE_LOG(LogTemp, Warning, TEXT("Collision with ground!"));
-
 }
