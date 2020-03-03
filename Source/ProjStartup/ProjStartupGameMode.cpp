@@ -80,10 +80,10 @@ void AProjStartupGameMode::SpawnPlayers() {
 
 			if (linearColor != nullptr)
 			{
-				UMaterialInstanceDynamic* dynamicMaterial = player->GetBall()->CreateDynamicMaterialInstance(0, player->GetBall()->GetMaterial(0));
-				dynamicMaterial->SetVectorParameterValue("Color", *linearColor);
-				player->GetBall()->SetMaterial(0, dynamicMaterial);
-				player->startingPosition = playerStartPoints[i]->GetActorLocation();
+				//UMaterialInstanceDynamic* dynamicMaterial = player->GetBall()->CreateDynamicMaterialInstance(0, player->GetBall()->GetMaterial(0));
+				//dynamicMaterial->SetVectorParameterValue("Color", *linearColor);
+				////player->GetBall()->SetMaterial(0, dynamicMaterial);
+				//player->startingPosition = playerStartPoints[i]->GetActorLocation();
 			}
 		}
 
