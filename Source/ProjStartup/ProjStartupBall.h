@@ -70,10 +70,6 @@ public:
 	FORCEINLINE class USkeletalMeshComponent* GetBall() const { return Ball; }
 
 	FVector startingPosition;
-	AActor* camera;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement Helper")
-	bool testaa;
 
 private:
 

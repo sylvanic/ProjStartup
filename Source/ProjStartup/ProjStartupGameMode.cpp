@@ -9,11 +9,12 @@
 #include "Templates/Casts.h"
 #include "SpawnArea.h"
 #include "SmooMainCamera.h"
-#include "ProjStartupGameState.h"
+#include "Materials/MaterialInstanceDynamic.h"
+#include "MyGameInstance.h"
+
 
 AProjStartupGameMode::AProjStartupGameMode()
 {
-	GameStateClass = AProjStartupGameState::StaticClass();
 	DefaultPawnClass = nullptr;
 	PlayerStateClass = nullptr;
 	GameStateClass = nullptr;
@@ -39,8 +40,9 @@ void AProjStartupGameMode::SpawnPlayers() {
 		{
 			APlayerController* pc = UGameplayStatics::CreatePlayer(GetWorld(), i);
 			AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
-			
-			player->startingPosition = playerStartPoints[i]->GetActorLocation();
+
+			FLinearColor* linearColor = nullptr;
+			UMyGameInstance* gameinstance = Cast<UMyGameInstance>(GetGameInstance());
 
 			if (player != nullptr)
 			{
@@ -49,15 +51,39 @@ void AProjStartupGameMode::SpawnPlayers() {
 
 			if (pc != nullptr)
 			{
+				//Player 2
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString("posses1"));
+
 				pc->Possess(player);
+				if (gameinstance)
+				{
+					linearColor = &gameinstance->colorPlayer2;
+				}
+				else
+				{
+					GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("Casting Error"));
+				}
 			}
 			else
 			{
+				//Player1
 				UE_LOG(LogTemp, Warning, TEXT("player controller already exists: %i"), i);
 				UE_LOG(LogTemp, Warning, TEXT("Assigning player controller %i to player %i"), i, i);
 
 				APlayerController* existingController = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), i);
 				existingController->Possess(player);
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString(player->GetName()));
+				linearColor = &gameinstance->colorPlayer1;
+
+
+			}
+
+			if (linearColor != nullptr)
+			{
+				//UMaterialInstanceDynamic* dynamicMaterial = player->GetBall()->CreateDynamicMaterialInstance(0, player->GetBall()->GetMaterial(0));
+				//dynamicMaterial->SetVectorParameterValue("Color", *linearColor);
+				////player->GetBall()->SetMaterial(0, dynamicMaterial);
+				//player->startingPosition = playerStartPoints[i]->GetActorLocation();
 			}
 		}
 

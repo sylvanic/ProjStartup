@@ -134,11 +134,7 @@ void AProjStartupBall::MoveRight(float Val)
 			Ball->AddImpulse(Speed);
 		}
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Val));
-
 	//AddMovementInput(GetActorRightVector(), Val);
-
 }
 
 void AProjStartupBall::MoveForward(float Val)
@@ -158,7 +154,7 @@ void AProjStartupBall::MoveForward(float Val)
 
 void AProjStartupBall::Jump()
 {
-	if (bCanJump)
+	if (true)
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
 		Ball->AddImpulse(Impulse);

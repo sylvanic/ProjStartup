@@ -23,6 +23,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Var")
 	int ScorePlayer2;
 
+
 	bool HasInitialized = false;
 private:
 	void SpawnPlayers();
