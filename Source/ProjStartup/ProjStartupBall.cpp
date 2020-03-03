@@ -134,11 +134,7 @@ void AProjStartupBall::MoveRight(float Val)
 			Ball->AddImpulse(Speed);
 		}
 	}
-
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Val));
-
 	//AddMovementInput(GetActorRightVector(), Val);
-
 }
 
 void AProjStartupBall::MoveForward(float Val)
