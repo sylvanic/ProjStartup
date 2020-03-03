@@ -17,6 +17,12 @@ public:
 	
 	std::vector<AProjStartupBall*> Players;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Var")
+	int ScorePlayer1;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Var")
+	int ScorePlayer2;
+
 	bool HasInitialized = false;
 private:
 	void SpawnPlayers();

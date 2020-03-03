@@ -11,10 +11,16 @@
 #include "Engine.h"
 
 #include "PhysicalMaterials/PhysicalMaterial.h"
+#include <ProjStartup\SmooMainCamera.h>
+#include "ProjStartupGameMode.h"
+
+
 
 
 AProjStartupBall::AProjStartupBall()
 {
+	
+
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> BallMesh(TEXT("/Game/Meshes/TestPlayer"));
 
 	// Create mesh component for the ball
@@ -35,12 +41,14 @@ AProjStartupBall::AProjStartupBall()
 	sphere->SetupAttachment(RootComponent);
 
 	sphere2 = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider2"));
-	sphere2->InitSphereRadius(50);
+	sphere2->InitSphereRadius(60);
 	sphere2->SetupAttachment(RootComponent);
+	sphere2->OnComponentBeginOverlap.AddDynamic(this, &AProjStartupBall::BeginOverlap);
+
 
 	// Set up forces
-	//static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
-	//Ball->SetPhysMaterialOverride(SmooPhysics.Object);
+	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
+	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
 	Ball->SetMassOverrideInKg("Smoo", 100.0f, true);
 	Ball->Density = 1.0f;
@@ -53,10 +61,16 @@ AProjStartupBall::AProjStartupBall()
 
 
 	//disable AI
-	//AutoPossessAI = EAutoPossessAI::Disabled;
+	AutoPossessAI = EAutoPossessAI::Disabled;
 	AIControllerClass = nullptr;
 	bReplicates = false;
+
+	//MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("Movement Component"));
+	//MovementComponent->UpdatedComponent = RootComponent;
+
+
 }
+
 
 // Called every frame
 void AProjStartupBall::Tick(float DeltaTime)
@@ -90,8 +104,9 @@ void AProjStartupBall::Tick(float DeltaTime)
 			if (!object->isSticked)
 			{
 				attachedActors.Add(object);
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(object->GetName()));
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(object->GetName()));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
+				object->owner = this;
 				object->isSticked = true;
 				object->AttachToComponent(Ball, FAttachmentTransformRules::KeepWorldTransform);
 			}
@@ -106,24 +121,39 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProjStartupBall::MoveForward);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AProjStartupBall::Jump);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AProjStartupBall::Attack);
+	PlayerInputComponent->BindAction("Die", IE_Pressed, this, &AProjStartupBall::Die);
 }
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
+	if (Ball->IsSimulatingPhysics())
 	{
-		const FVector Speed = FVector(0.f, Val * currentSpeed, 0.f);
-		Ball->AddImpulse(Speed);
+		if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
+		{
+			const FVector Speed = FVector(0.f, Val * currentSpeed, 0.f);
+			Ball->AddImpulse(Speed);
+		}
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Val));
+
+	//AddMovementInput(GetActorRightVector(), Val);
+
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
+	if (Ball->IsSimulatingPhysics())
 	{
-		const FVector Torque = FVector(Val * currentSpeed, 0.f, 0.f);
-		Ball->AddImpulse(Torque);
+		if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
+		{
+			const FVector Torque = FVector(Val * currentSpeed, 0.f, 0.f);
+			Ball->AddImpulse(Torque);
+		}
 	}
+	//AddMovementInput(GetActorForwardVector(), Val, true );
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Val));
+
 }
 
 void AProjStartupBall::Jump()
@@ -136,6 +166,54 @@ void AProjStartupBall::Jump()
 		//bCanJump = false;
 	}
 }
+
+void AProjStartupBall::Die()
+{
+	if (IsPlayerControlled())
+	{
+
+
+		TArray<AActor*> players;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjStartupBall::StaticClass(), players);
+
+		for (size_t i = 0; i < players.Num(); i++)
+		{
+			AProjStartupBall* playerBall = Cast<AProjStartupBall>(players[i]);
+			if (playerBall)
+			{
+				playerBall->SetActorLocation(playerBall->startingPosition, false, nullptr, ETeleportType::TeleportPhysics);
+				playerBall->Ball->SetSimulatePhysics(false);
+				playerBall->Ball->SetSimulatePhysics(true);
+			}
+		}
+		
+	AProjStartupGameMode* mymode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
+	if (mymode)
+	{
+		mymode->ScorePlayer1++;
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(mymode->ScorePlayer1));
+	}
+	else {
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("error"));
+	}
+
+
+		//FTransform test = GetTransform();
+		//GetWorld()->DestroyActor(this);
+		//if (camera != nullptr)
+		//{
+		//	GetWorld()->DestroyActor(camera);
+		//}
+		//AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(AProjStartupBall::StaticClass(), startingPosition);
+		//APlayerController* existingController = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), 0);
+		//existingController->Possess(player);
+		//camera = GetWorld()->SpawnActor<ASmooMainCamera>(ASmooMainCamera::StaticClass(), startingPosition);
+		//player->startingPosition = startingPosition;
+		
+
+	}
+}
+
 
 void AProjStartupBall::Attack()
 {
@@ -154,7 +232,7 @@ void AProjStartupBall::Attack()
 			staticComp->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 			staticComp->AddImpulse(GetVelocity() / 2.0f);
 		}
-		object->isAttracting = false;
+		//object->isAttracting = false;
 		object->launched = true;
 
 	}
@@ -170,4 +248,23 @@ void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor
 	currentSpeed = GroundSpeed;
 	bCanJump = true;
 	UE_LOG(LogTemp, Warning, TEXT("Collision with ground!"));
+}
+
+
+void AProjStartupBall::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+	APickableObject* object = Cast<APickableObject>(OtherActor);
+
+	if (object)
+	{
+		if (object->owner != this && object->owner != nullptr)
+		{
+			//if(object->owner->GetAttachParentActor())
+			if (object->GetAttachParentActor() == nullptr)
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("attack"));
+				object->owner = nullptr;
+			}
+		}
+	}
 }

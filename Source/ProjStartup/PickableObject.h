@@ -30,6 +30,8 @@ public:
 	bool isSticked;
 	bool launched;
 
+	AActor* owner;
+
 private:
 	AActor* player;
 

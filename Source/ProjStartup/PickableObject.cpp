@@ -2,7 +2,9 @@
 
 
 #include "PickableObject.h"
-//#include "Editor.h"	
+#include "Editor.h"	
+#include "Engine/CollisionProfile.h"
+#include "Engine/StaticMesh.h"
 //#include "DestructibleComponent.h"
 
 // Sets default values
@@ -22,7 +24,7 @@ void APickableObject::BeginPlay()
 	if (sphereComponent != nullptr)
 	{
 		sphereComponent->OnComponentBeginOverlap.AddDynamic(this, &APickableObject::BeginOverlap);
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(sphereComponent->GetName()));
+		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(sphereComponent->GetName()));
 	}
 
 	attractionSpeed = 0.08f;
@@ -32,6 +34,7 @@ void APickableObject::BeginPlay()
 void APickableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isAttracting) + "-" + FString::FromInt(isSticked));
 
 	if (isAttracting && !isSticked)
 	{
@@ -47,12 +50,23 @@ void APickableObject::Tick(float DeltaTime)
 
 		if (timerDelay >= 2)
 		{
+			isAttracting = false;
 			launched = false;
-			//isSticked = false;
+			isSticked = false;
 			timerDelay = 0;
+
+
+			TArray<UStaticMeshComponent*> staticComps;
+			GetComponents<UStaticMeshComponent>(staticComps);
+
+			for (int32 ActorIndex2 = 0; ActorIndex2 < 1; ActorIndex2++)
+			{
+				UStaticMeshComponent* staticComp = staticComps[ActorIndex2];
+				staticComp->SetSimulatePhysics(false);
+				staticComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+			}
 		}
 	}
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isSticked));
 }
 
 void APickableObject::SetPlayer(AActor* playerP)
@@ -67,10 +81,8 @@ void APickableObject::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AAc
 	AMapObject* object = Cast<AMapObject>(OtherActor);
 	if (object)
 	{
-		
 		//UDestructibleComponent* destructibleComponent = FindComponentByClass<UDestructibleComponent>();
 		//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(test.GetName()));
-
 	}
 	
 }

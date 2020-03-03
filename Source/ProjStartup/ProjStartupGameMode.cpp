@@ -9,9 +9,11 @@
 #include "Templates/Casts.h"
 #include "SpawnArea.h"
 #include "SmooMainCamera.h"
+#include "ProjStartupGameState.h"
 
 AProjStartupGameMode::AProjStartupGameMode()
 {
+	GameStateClass = AProjStartupGameState::StaticClass();
 	DefaultPawnClass = nullptr;
 	PlayerStateClass = nullptr;
 	GameStateClass = nullptr;
@@ -37,6 +39,9 @@ void AProjStartupGameMode::SpawnPlayers() {
 		{
 			APlayerController* pc = UGameplayStatics::CreatePlayer(GetWorld(), i);
 			AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
+			
+			player->startingPosition = playerStartPoints[i]->GetActorLocation();
+
 			if (player != nullptr)
 			{
 				Players.push_back(player);

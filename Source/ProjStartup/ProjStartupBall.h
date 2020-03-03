@@ -6,7 +6,7 @@
 #include "GameFramework/Pawn.h"
 #include "Components/SphereComponent.h"
 #include "PickableObject.h"
-#include "ProjStartupBall.generated.h"
+#include "ProjStartupBall.generated.h" 
 
 UCLASS(config=Game)
 class AProjStartupBall : public APawn
@@ -43,6 +43,7 @@ public:
 
 protected:
 
+
 	/** Called for side to side input */
 	void MoveRight(float Val);
 
@@ -62,9 +63,17 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
+	void Die();
+
 public:
 	/** Returns Ball subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetBall() const { return Ball; }
+
+	FVector startingPosition;
+	AActor* camera;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Movement Helper")
+	bool testaa;
 
 private:
 
@@ -73,4 +82,9 @@ private:
 	TArray<APickableObject*> attachedActors;
 
 	float currentSpeed;
+
+	UPawnMovementComponent* MovementComponent;
+
+	UFUNCTION()
+	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 };
