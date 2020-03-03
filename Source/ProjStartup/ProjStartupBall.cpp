@@ -158,7 +158,7 @@ void AProjStartupBall::MoveForward(float Val)
 
 void AProjStartupBall::Jump()
 {
-	if (bCanJump)
+	if (true)
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
 		Ball->AddImpulse(Impulse);
