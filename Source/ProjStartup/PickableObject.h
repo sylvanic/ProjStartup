@@ -29,12 +29,19 @@ public:
 	bool isAttracting;
 	bool isSticked;
 	bool launched;
-
-	AActor* owner;
+	bool isNotMoving() 
+	{
+		if (physicsVelocity <= 0) {
+			return true;
+		}
+		return false;
+	}
 
 private:
 	AActor* player;
 
+	FVector vector = AActor::GetVelocity();
+	float physicsVelocity = vector.Size;
 	float velocity;
 	float timerDelay;
 	USphereComponent* sphereComponent;
