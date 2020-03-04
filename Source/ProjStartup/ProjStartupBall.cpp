@@ -48,8 +48,8 @@ AProjStartupBall::AProjStartupBall()
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	GroundAcceleration = 100.0f;
-	AirAcceleration = 60.0f;
+	GroundAcceleration = 95.0f;
+	AirAcceleration = 70.0f;
 	JumpImpulse = 3000.0f;
 	MaxSpeed = 550.0f;
 	currentAcceleration = GroundAcceleration;

@@ -38,19 +38,10 @@ public:
 
 	UStaticMeshComponent* staticComp;
 
-	bool isNotMoving() 
-	{
-		if (physicsVelocity <= 0) {
-			return true;
-		}
-		return false;
-	}
+	
 
 private:
 	AActor* player;
-
-	FVector vector = AActor::GetVelocity();
-	float physicsVelocity = vector.Size();
 	float timerDelay;
 	float velocity;
 	USphereComponent* sphereComponent;
