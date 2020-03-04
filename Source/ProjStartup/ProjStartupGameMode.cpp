@@ -74,8 +74,6 @@ void AProjStartupGameMode::SpawnPlayers() {
 				existingController->Possess(player);
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString(player->GetName()));
 				linearColor = &gameinstance->colorPlayer1;
-
-
 			}
 
 			if (linearColor != nullptr)
