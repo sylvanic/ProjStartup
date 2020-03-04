@@ -48,7 +48,7 @@ AProjStartupBall::AProjStartupBall()
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	GroundAcceleration = 95.0f;
+	GroundAcceleration = 90.0f;
 	AirAcceleration = 70.0f;
 	JumpImpulse = 3000.0f;
 	MaxSpeed = 550.0f;
@@ -112,6 +112,8 @@ void AProjStartupBall::Tick(float DeltaTime)
 	{
 		bCanJump = true;
 	}
+
+	Ball->SetPhysicsLinearVelocity(ClampVector(Ball->GetPhysicsLinearVelocity(), -FVector(1.0f, 999.0f, 1.0f) * MaxSpeed, FVector(1.0f, 999.0f, 1.0f) * MaxSpeed));
 }
 
 void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent)
@@ -126,13 +128,13 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	const FVector Impulse = FVector(0.f, Val * currentAcceleration, 0.f);
+	const FVector Impulse = FVector(0.f, FMath::Clamp(Val, -1.0f, 1.0f) * currentAcceleration, 0.f);
 	Ball->AddImpulse(Impulse);
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	const FVector Impulse = FVector(Val * currentAcceleration, 0.f, 0.f);
+	const FVector Impulse = FVector(FMath::Clamp(Val, -1.0f, 1.0f) * currentAcceleration, 0.f, 0.f);
 	Ball->AddImpulse(Impulse);
 }
 
