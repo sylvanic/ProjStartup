@@ -53,8 +53,8 @@ AProjStartupBall::AProjStartupBall()
 	Ball->bLocalSpaceSimulation = true;
 	GroundSpeed = 90.0f;
 	AirSpeed = 90.0f;
-	JumpImpulse = 30.0f;
-	MaxSpeed = 450.0f;
+	JumpImpulse = 3000.0f;
+	MaxSpeed = 550.0f;
 	bCanJump = true; // Start being able to jump
 
 
