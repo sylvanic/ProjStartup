@@ -19,8 +19,6 @@
 
 AProjStartupBall::AProjStartupBall()
 {
-	
-
 	static ConstructorHelpers::FObjectFinder<USkeletalMesh> BallMesh(TEXT("/Game/Meshes/TestPlayer"));
 
 	// Create mesh component for the ball
