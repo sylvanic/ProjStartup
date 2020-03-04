@@ -25,7 +25,7 @@ void APickableObject::BeginPlay()
 		sphereComponent->OnComponentBeginOverlap.AddDynamic(this, &APickableObject::BeginOverlap);
 	}
 
-	attractionSpeed = 0.08f;
+	attractionSpeed = 0.15f;
 
 	TArray<UStaticMeshComponent*> staticComps;
 	GetComponents<UStaticMeshComponent>(staticComps);
@@ -58,6 +58,8 @@ void APickableObject::Tick(float DeltaTime)
 	if (launched)
 	{
 		timerDelay += DeltaTime;
+
+		
 
 		if (timerDelay >= 2)
 		{

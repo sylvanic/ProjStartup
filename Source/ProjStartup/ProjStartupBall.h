@@ -26,10 +26,10 @@ public:
 
 	/** Torque to apply when trying to roll ball */
 	UPROPERTY(EditAnywhere, Category=Ball)
-	float GroundSpeed;
+	float GroundAcceleration;
 
 	UPROPERTY(EditAnywhere, Category=Ball)
-	float AirSpeed;
+	float AirAcceleration;
 
 	/** Indicates whether we can currently jump, use to prevent double jumping */
 	UPROPERTY(EditAnywhere, Category = Ball)
@@ -37,6 +37,9 @@ public:
 
 	UPROPERTY(EditAnywhere, Category = Ball)
 	float MaxSpeed;
+
+	UPROPERTY(EditAnywhere, Category = Ball)
+	float JumpDelay;
 
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -54,10 +57,6 @@ protected:
 	void Jump();
 
 	void Attack();
-
-	// AActor interface
-	virtual void NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit) override;
-	// End of AActor interface
 
 	// APawn interface
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
@@ -77,7 +76,8 @@ private:
 	USphereComponent* sphere2;
 	TArray<APickableObject*> attachedActors;
 
-	float currentSpeed;
+	float currentAcceleration;
+	float jumpTimer;
 
 	UPawnMovementComponent* MovementComponent;
 

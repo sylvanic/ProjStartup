@@ -11,11 +11,8 @@
 #include "Engine.h"
 
 #include "PhysicalMaterials/PhysicalMaterial.h"
-#include <ProjStartup\SmooMainCamera.h>
+#include "ProjStartup\SmooMainCamera.h"
 #include "ProjStartupGameMode.h"
-
-
-
 
 AProjStartupBall::AProjStartupBall()
 {
@@ -26,11 +23,6 @@ AProjStartupBall::AProjStartupBall()
 	Ball->SetSkeletalMesh(BallMesh.Object);
 	Ball->BodyInstance.SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 	Ball->SetSimulatePhysics(true);
-	//Ball->SetAngularDamping(0.1f);
-	//Ball->SetLinearDamping(0.1f);
-	//Ball->BodyInstance.MassScale = 3.5f;
-	//Ball->BodyInstance.MaxAngularVelocity = 800.0f;
-	//Ball->SetNotifyRigidBodyCollision(true);
 	RootComponent = Ball;
 
 	//Create sphere collider
@@ -56,25 +48,18 @@ AProjStartupBall::AProjStartupBall()
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	//Ball->SetMassOverrideInKg("Smoo", 100.0f, true);
-	//Ball->Density = 1.0f;
-	//Ball->bLocalSpaceSimulation = true;
-	//GroundSpeed = 90.0f;
-	//AirSpeed = 90.0f;
-	//JumpImpulse = 30.0f;
-	//MaxSpeed = 450.0f;
+	GroundAcceleration = 100.0f;
+	AirAcceleration = 60.0f;
+	JumpImpulse = 3000.0f;
+	MaxSpeed = 550.0f;
+	currentAcceleration = GroundAcceleration;
 	bCanJump = true; // Start being able to jump
+	JumpDelay = 3.0f;
 
-
-	//disable AI
+	//Other settings
 	AutoPossessAI = EAutoPossessAI::Disabled;
 	AIControllerClass = nullptr;
 	bReplicates = false;
-
-	//MovementComponent = CreateDefaultSubobject<UPawnMovementComponent, UFloatingPawnMovement>(TEXT("Movement Component"));
-	//MovementComponent->UpdatedComponent = RootComponent;
-
-
 }
 
 
@@ -110,14 +95,22 @@ void AProjStartupBall::Tick(float DeltaTime)
 			if (!object->isSticked)
 			{
 				attachedActors.Add(object);
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Blue, FString(object->GetName()));
-				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
 				object->owner = this;
 				object->isSticked = true;
 				object->K2_AttachToActor(this, "", EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true);
 				object->staticComp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 			}
 		}
+	}
+
+	if (jumpTimer < JumpDelay)
+	{
+		bCanJump = false;
+		jumpTimer += DeltaTime;
+	}
+	else
+	{
+		bCanJump = true;
 	}
 }
 
@@ -133,30 +126,25 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	const FVector Impulse = FVector(-Val * 40, 0.f, 0.f);
-
+	const FVector Impulse = FVector(0.f, Val * currentAcceleration, 0.f);
 	Ball->AddImpulse(Impulse);
-
-	//AddMovementInput(GetActorRightVector(), Val);
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	const FVector Impulse = FVector(0.f, Val * 40, 0.f);
+	const FVector Impulse = FVector(Val * currentAcceleration, 0.f, 0.f);
 	Ball->AddImpulse(Impulse);
-
-	//AddMovementInput(GetActorForwardVector(), Val, true );
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Val));
-
 }
 
+// Try to jump
 void AProjStartupBall::Jump()
 {
-	if (true)
+	if (bCanJump)
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
+		currentAcceleration = AirAcceleration;
 		Ball->AddImpulse(Impulse);
-		//bCanJump = false;
+		jumpTimer = 0.0f;
 	}
 }
 
@@ -164,31 +152,29 @@ void AProjStartupBall::Die()
 {
 	if (IsPlayerControlled())
 	{
+		AProjStartupGameMode* myMode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
 
+		TArray<AActor*> Players;
+		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjStartupBall::StaticClass(), Players);
 
-		TArray<AActor*> players;
-		UGameplayStatics::GetAllActorsOfClass(GetWorld(), AProjStartupBall::StaticClass(), players);
-
-		for (size_t i = 0; i < players.Num(); i++)
+		for (size_t i = 0; i < Players.Num(); i++)
 		{
-			AProjStartupBall* playerBall = Cast<AProjStartupBall>(players[i]);
+			AProjStartupBall* playerBall = Cast<AProjStartupBall>(Players[i]);
 			if (playerBall)
 			{
 				playerBall->SetActorLocation(playerBall->startingPosition, false, nullptr, ETeleportType::TeleportPhysics);
-				playerBall->Ball->SetSimulatePhysics(false);
 				playerBall->Ball->SetSimulatePhysics(true);
 			}
 		}
-		
-	AProjStartupGameMode* mymode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
-	if (mymode)
-	{
-		mymode->ScorePlayer1++;
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(mymode->ScorePlayer1));
-	}
-	else {
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("error"));
-	}
+
+		if (myMode)
+		{
+			myMode->ScorePlayer1++;
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(myMode->ScorePlayer1));
+		}
+		else {
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("error"));
+		}
 
 
 		//FTransform test = GetTransform();
@@ -202,8 +188,6 @@ void AProjStartupBall::Die()
 		//existingController->Possess(player);
 		//camera = GetWorld()->SpawnActor<ASmooMainCamera>(ASmooMainCamera::StaticClass(), startingPosition);
 		//player->startingPosition = startingPosition;
-		
-
 	}
 }
 
@@ -227,22 +211,12 @@ void AProjStartupBall::Attack()
 		}
 		//object->isAttracting = false;
 		object->launched = true;
-
 	}
+
 	attachedActors.Empty();
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
 
 }
-
-
-void AProjStartupBall::NotifyHit(class UPrimitiveComponent* MyComp, class AActor* Other, class UPrimitiveComponent* OtherComp, bool bSelfMoved, FVector HitLocation, FVector HitNormal, FVector NormalImpulse, const FHitResult& Hit)
-{
-	Super::NotifyHit(MyComp, Other, OtherComp, bSelfMoved, HitLocation, HitNormal, NormalImpulse, Hit);
-	currentSpeed = GroundSpeed;
-	bCanJump = true;
-	UE_LOG(LogTemp, Warning, TEXT("Collision with ground!"));
-}
-
 
 void AProjStartupBall::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {

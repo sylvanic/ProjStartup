@@ -23,10 +23,10 @@ class PROJSTARTUP_API ASmooMainCamera : public AActor
 	void UpdateCamera();
 
 	UPROPERTY(EditAnywhere)
-	float minDistance = 700.0f;
+	float minDistance = 1800.0f;
 
 	UPROPERTY(EditAnywhere)
-	float maxDistance = 1500.0f;
+	float maxDistance = 3000.0f;
 	
 public:	
 	// Sets default values for this actor's properties

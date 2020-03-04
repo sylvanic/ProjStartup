@@ -51,8 +51,8 @@ private:
 
 	FVector vector = AActor::GetVelocity();
 	float physicsVelocity = vector.Size();
-	float velocity;
 	float timerDelay;
+	float velocity;
 	USphereComponent* sphereComponent;
 
 	float attractionSpeed;
