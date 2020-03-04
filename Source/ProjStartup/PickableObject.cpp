@@ -43,7 +43,7 @@ void APickableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isNotMoving()));
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isNotMoving()));
 
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isAttracting) + "-" + FString::FromInt(isSticked));
 
@@ -57,14 +57,13 @@ void APickableObject::Tick(float DeltaTime)
 	
 	if (launched)
 	{
-		timerDelay += DeltaTime;
+		
 
-		if (timerDelay >= 2)
+		if (GetVelocity().IsNearlyZero())
 		{
 			isAttracting = false;
 			launched = false;
 			isSticked = false;
-			timerDelay = 0;
 
 
 			staticComp->SetSimulatePhysics(false);
