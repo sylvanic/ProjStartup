@@ -27,5 +27,9 @@ public:
 	bool HasInitialized = false;
 private:
 	void SpawnPlayers();
+
+		TSubclassOf<AActor> FloorCellClass;
+
+
 };
 

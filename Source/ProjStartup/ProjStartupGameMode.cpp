@@ -11,7 +11,8 @@
 #include "SmooMainCamera.h"
 #include "Materials/MaterialInstanceDynamic.h"
 #include "MyGameInstance.h"
-
+#include "PhysicalMaterials/PhysicalMaterial.h"
+#include "UObject/ConstructorHelpers.h"
 
 AProjStartupGameMode::AProjStartupGameMode()
 {
@@ -19,6 +20,11 @@ AProjStartupGameMode::AProjStartupGameMode()
 	PlayerStateClass = nullptr;
 	GameStateClass = nullptr;
 	SpectatorClass = nullptr;
+
+	static ConstructorHelpers::FObjectFinder<UClass> SmooPhysics(TEXT("Blueprint'/Game/MyAssets/Player/Player.Player_C'"));
+	FloorCellClass = SmooPhysics.Object;
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString(FloorCellClass.Get()->GetName()));
+
 }
 
 void AProjStartupGameMode::BeginPlay() {
@@ -39,7 +45,11 @@ void AProjStartupGameMode::SpawnPlayers() {
 		for (size_t i = 0; i < playerStartPoints.Num(); i++)
 		{
 			APlayerController* pc = UGameplayStatics::CreatePlayer(GetWorld(), i);
-			AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(AProjStartupBall::StaticClass(), playerStartPoints[i]->GetTransform());
+
+			UObject* test = FindObject<UObject>(UObject::StaticClass(), TEXT("/Game/NewBlueprint.NewBlueprint'"));
+			UBlueprint* GeneratedBP = Cast<UBlueprint>(test);
+
+			AProjStartupBall* player = GetWorld()->SpawnActor<AProjStartupBall>(FloorCellClass, playerStartPoints[i]->GetTransform());
 
 			FLinearColor* linearColor = nullptr;
 			UMyGameInstance* gameinstance = Cast<UMyGameInstance>(GetGameInstance());
@@ -72,7 +82,7 @@ void AProjStartupGameMode::SpawnPlayers() {
 
 				APlayerController* existingController = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), i);
 				existingController->Possess(player);
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString(player->GetName()));
+				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Orange, FString(player->GetName()));
 				linearColor = &gameinstance->colorPlayer1;
 			}
 
