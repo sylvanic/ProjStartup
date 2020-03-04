@@ -3,10 +3,14 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "Engine/StaticMesh.h"
+
 #include "GameFramework/Actor.h"
 #include "Components/SphereComponent.h"
 #include "MapObject.h"
+
 #include "PickableObject.generated.h"
+
 
 UCLASS()
 class PROJSTARTUP_API APickableObject : public AActor
@@ -32,21 +36,14 @@ public:
 
 	AActor* owner;
 
+	UStaticMeshComponent* staticComp;
 
-
-	bool isNotMoving() 
-	{
-		if (physicsVelocity <= 0) {
-			return true;
-		}
-		return false;
-	}
+	
 
 private:
 	AActor* player;
 
-	FVector vector = AActor::GetVelocity();
-	float physicsVelocity = vector.Size();
+
 	float velocity;
 	float timerDelay;
 	USphereComponent* sphereComponent;

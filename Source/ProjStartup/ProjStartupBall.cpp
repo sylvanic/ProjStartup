@@ -26,11 +26,11 @@ AProjStartupBall::AProjStartupBall()
 	Ball->SetSkeletalMesh(BallMesh.Object);
 	Ball->BodyInstance.SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 	Ball->SetSimulatePhysics(true);
-	Ball->SetAngularDamping(0.1f);
-	Ball->SetLinearDamping(0.1f);
-	Ball->BodyInstance.MassScale = 3.5f;
-	Ball->BodyInstance.MaxAngularVelocity = 800.0f;
-	Ball->SetNotifyRigidBodyCollision(true);
+	//Ball->SetAngularDamping(0.1f);
+	//Ball->SetLinearDamping(0.1f);
+	//Ball->BodyInstance.MassScale = 3.5f;
+	//Ball->BodyInstance.MaxAngularVelocity = 800.0f;
+	//Ball->SetNotifyRigidBodyCollision(true);
 	RootComponent = Ball;
 
 	//Create sphere collider
@@ -39,10 +39,18 @@ AProjStartupBall::AProjStartupBall()
 	sphere->SetupAttachment(RootComponent);
 
 	sphere2 = CreateDefaultSubobject<USphereComponent>(TEXT("Sphere Collider2"));
-	sphere2->InitSphereRadius(60);
+	sphere2->InitSphereRadius(20);
 	sphere2->SetupAttachment(RootComponent);
 	sphere2->OnComponentBeginOverlap.AddDynamic(this, &AProjStartupBall::BeginOverlap);
 
+
+	//UCapsuleComponent* sphere3 = CreateDefaultSubobject<UCapsuleComponent>(TEXT("Sphere Collider3"));
+	//sphere3->SetRelativeLocation(FVector(130, 0, 0), false);
+	//sphere3->SetCapsuleRadius(40);
+	//sphere3->SetCapsuleHalfHeight(80);
+	//sphere3->SetupAttachment(RootComponent);
+	//sphere3->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
+	//sphere3->bHiddenInGame = false;
 
 	// Set up forces
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
@@ -106,7 +114,8 @@ void AProjStartupBall::Tick(float DeltaTime)
 				//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
 				object->owner = this;
 				object->isSticked = true;
-				object->AttachToComponent(Ball, FAttachmentTransformRules::KeepWorldTransform);
+				object->K2_AttachToActor(this, "", EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true);
+				object->staticComp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
 			}
 		}
 	}
@@ -124,27 +133,18 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	if (Ball->IsSimulatingPhysics())
-	{
-		if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
-		{
-			const FVector Speed = FVector(0.f, Val * currentSpeed, 0.f);
-			Ball->AddImpulse(Speed);
-		}
-	}
+	const FVector Impulse = FVector(-Val * 40, 0.f, 0.f);
+
+	Ball->AddImpulse(Impulse);
+
 	//AddMovementInput(GetActorRightVector(), Val);
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	if (Ball->IsSimulatingPhysics())
-	{
-		if (Ball->GetPhysicsLinearVelocity().Size() < MaxSpeed)
-		{
-			const FVector Torque = FVector(Val * currentSpeed, 0.f, 0.f);
-			Ball->AddImpulse(Torque);
-		}
-	}
+	const FVector Impulse = FVector(0.f, Val * 40, 0.f);
+	Ball->AddImpulse(Impulse);
+
 	//AddMovementInput(GetActorForwardVector(), Val, true );
 	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(Val));
 
@@ -156,7 +156,6 @@ void AProjStartupBall::Jump()
 	{
 		const FVector Impulse = FVector(0.f, 0.f, JumpImpulse);
 		Ball->AddImpulse(Impulse);
-		currentSpeed = AirSpeed;
 		//bCanJump = false;
 	}
 }
