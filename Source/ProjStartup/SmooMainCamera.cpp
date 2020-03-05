@@ -73,8 +73,10 @@ void ASmooMainCamera::UpdateCamera() {
 		// add all player positions together
 		newPosition += players.at(i)->GetActorLocation();
 	}
+	// add the center of the arena so we always roughly look at the center of the arena
+	newPosition += FVector(549.202026, 224.018829, 38.244568);
 	// get the average of all player positions
-	newPosition /= players.size();
+	newPosition /= players.size() + 1;
 	// move the camera a bit lower so we don't lose track of the player who's closest to the camera
 	newPosition += FVector::BackwardVector * 500.0f;
 
