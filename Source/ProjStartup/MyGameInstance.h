@@ -22,4 +22,7 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Var")
 	FLinearColor colorPlayer2;
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Var")
+		bool player1Won;
 };

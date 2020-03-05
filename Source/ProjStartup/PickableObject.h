@@ -6,7 +6,7 @@
 #include "Engine/StaticMesh.h"
 
 #include "GameFramework/Actor.h"
-#include "Components/SphereComponent.h"
+#include "Components/CapsuleComponent.h"
 #include "MapObject.h"
 
 #include "PickableObject.generated.h"
@@ -38,16 +38,21 @@ public:
 
 	UStaticMeshComponent* staticComp;
 
-	
+	bool Landed;
+
 
 private:
 	AActor* player;
 	float timerDelay;
 	float velocity;
-	USphereComponent* sphereComponent;
+	UCapsuleComponent* sphereComponent;
 
 	float attractionSpeed;
 
 	UFUNCTION()
 	void BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+
+	UFUNCTION()
+		void OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit);
+
 };

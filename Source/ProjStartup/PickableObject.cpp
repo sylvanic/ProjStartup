@@ -4,6 +4,7 @@
 #include "PickableObject.h"
 #include "Editor.h"	
 #include "Engine/CollisionProfile.h"
+#include <ProjStartup\ProjStartupBall.h>
 //#include "DestructibleComponent.h"
 
 // Sets default values
@@ -18,12 +19,9 @@ void APickableObject::BeginPlay()
 {
 	Super::BeginPlay();
 
-	sphereComponent = FindComponentByClass<USphereComponent>();
+	sphereComponent = FindComponentByClass<UCapsuleComponent>();
 
-	if (sphereComponent != nullptr)
-	{
-		sphereComponent->OnComponentBeginOverlap.AddDynamic(this, &APickableObject::BeginOverlap);
-	}
+
 
 	attractionSpeed = 0.20f;
 
@@ -36,6 +34,61 @@ void APickableObject::BeginPlay()
 		staticComp = staticComps[ActorIndex2];
 
 	}
+
+	staticComp->OnComponentHit.AddDynamic(this, &APickableObject::OnHit);
+
+
+}
+
+void APickableObject::OnHit(UPrimitiveComponent* HitComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, FVector NormalImpulse, const FHitResult& Hit)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Green, FString(OtherActor->GetName()));
+
+	if (OtherActor->GetName().Contains("Ground")) {
+		Landed = true;
+	}
+	else if(OtherActor->GetName().Contains("Player") && OtherActor != owner)
+	{
+
+		AProjStartupBall* playerCasted = Cast<AProjStartupBall>(OtherActor);
+
+		for (int32 ActorIndex = 0; ActorIndex < playerCasted->attachedActors.Num(); ActorIndex++)
+		{
+			APickableObject* object = playerCasted->attachedActors[ActorIndex];
+			object->DetachFromActor(FDetachmentTransformRules::KeepWorldTransform);
+
+			TArray<UStaticMeshComponent*> staticComps;
+			object->GetComponents<UStaticMeshComponent>(staticComps);
+
+			for (int32 ActorIndex2 = 0; ActorIndex2 < 1; ActorIndex2++)
+			{
+				UStaticMeshComponent* staticComp2 = staticComps[ActorIndex2];
+				staticComp2->SetSimulatePhysics(true);
+				staticComp2->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
+
+			}
+			//object->isAttracting = false;
+			object->launched = true;
+			object->Landed = false;
+
+		}
+
+		if (playerCasted)
+		{
+
+		
+			if (owner != OtherActor && owner != nullptr)
+			{
+				if (staticComp->GetPhysicsLinearVelocity().Size() > 300)
+				{
+					playerCasted->Die(staticComp->GetPhysicsLinearVelocity());
+					owner = nullptr;
+				}
+			}
+		}
+
+	}
+	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(OtherActor->GetName()));
 }
 
 // Called every frame
@@ -43,31 +96,40 @@ void APickableObject::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isNotMoving()));
 
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(isAttracting) + "-" + FString::FromInt(isSticked));
 
 	if (isAttracting && !isSticked)
 	{
 		FVector direction = player->GetActorLocation() - GetActorLocation();
-		
+
 
 		SetActorLocation(GetActorLocation() + (direction * attractionSpeed));
 	}
-	
-	if (launched)
+
+	TArray<AActor*> overlappingActors;
+
+	//staticComp->GetOverlappingActors(overlappingActors);
+
+	//for (size_t i = 0; i < overlappingActors.Num(); i++)
+	//{
+	//	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString(overlappingActors[i]->GetName()));
+	//}
+
+
+	if (staticComp->GetPhysicsLinearVelocity().Size() < 10 && launched && Landed)
 	{
-		if (GetVelocity().Size() < 1.0f)
-		{
-			isAttracting = false;
-			launched = false;
-			isSticked = false;
+		isAttracting = false;
+		launched = false;
+		isSticked = false;
+		owner = nullptr;
+		
+		staticComp->SetSimulatePhysics(false);
+		staticComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("rest"));
 
-
-			staticComp->SetSimulatePhysics(false);
-			staticComp->SetCollisionProfileName(UCollisionProfile::NoCollision_ProfileName);
-		}
 	}
+
+
 }
 
 void APickableObject::SetPlayer(AActor* playerP)

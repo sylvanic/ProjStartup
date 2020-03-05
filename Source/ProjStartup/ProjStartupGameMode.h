@@ -24,12 +24,15 @@ public:
 	int ScorePlayer2;
 
 
+	AActor* player1;
+
+	AActor* player2;
+
 	bool HasInitialized = false;
 private:
 	void SpawnPlayers();
 
 		TSubclassOf<AActor> FloorCellClass;
-
 
 };
 
