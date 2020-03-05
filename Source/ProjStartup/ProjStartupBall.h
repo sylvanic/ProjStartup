@@ -62,19 +62,25 @@ protected:
 	virtual void SetupPlayerInputComponent(class UInputComponent* InputComponent) override;
 	// End of APawn interface
 
-	void Die();
 
 public:
 	/** Returns Ball subobject **/
 	FORCEINLINE class USkeletalMeshComponent* GetBall() const { return Ball; }
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Custom Var")
 	FVector startingPosition;
+
+	void Die(FVector impulse);
+
+	UFUNCTION(BlueprintImplementableEvent)
+		void MyBlueprintEventFunction();
+
+	TArray<APickableObject*> attachedActors;
 
 private:
 
 	USphereComponent* sphere;
 	USphereComponent* sphere2;
-	TArray<APickableObject*> attachedActors;
 
 	float currentAcceleration;
 	float jumpTimer;

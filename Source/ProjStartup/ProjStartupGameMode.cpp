@@ -63,7 +63,7 @@ void AProjStartupGameMode::SpawnPlayers() {
 			{
 				//Player 2
 				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, FString("posses1"));
-
+				player2 = player;
 				pc->Possess(player);
 				if (gameinstance)
 				{
@@ -79,6 +79,7 @@ void AProjStartupGameMode::SpawnPlayers() {
 				//Player1
 				UE_LOG(LogTemp, Warning, TEXT("player controller already exists: %i"), i);
 				UE_LOG(LogTemp, Warning, TEXT("Assigning player controller %i to player %i"), i, i);
+				player1 = player;
 
 				APlayerController* existingController = UGameplayStatics::GetPlayerControllerFromID(GetWorld(), i);
 				existingController->Possess(player);
@@ -89,8 +90,8 @@ void AProjStartupGameMode::SpawnPlayers() {
 			if (linearColor != nullptr)
 			{
 				UMaterialInstanceDynamic* dynamicMaterial = player->GetBall()->CreateDynamicMaterialInstance(0, player->GetBall()->GetMaterial(0));
-				dynamicMaterial->SetVectorParameterValue("Color", *linearColor);
-				player->GetBall()->SetMaterial(0, dynamicMaterial);
+				//dynamicMaterial->SetVectorParameterValue("Color", *linearColor);
+				//player->GetBall()->SetMaterial(0, dynamicMaterial);
 				player->startingPosition = playerStartPoints[i]->GetActorLocation();
 			}
 		}

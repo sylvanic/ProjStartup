@@ -48,7 +48,7 @@ AProjStartupBall::AProjStartupBall()
 	static ConstructorHelpers::FObjectFinder<UPhysicalMaterial> SmooPhysics(TEXT("/Game/Materials/SmooPhysics"));
 	Ball->SetPhysMaterialOverride(SmooPhysics.Object);
 
-	GroundAcceleration = 90.0f;
+	GroundAcceleration = 50;
 	AirAcceleration = 70.0f;
 	JumpImpulse = 3000.0f;
 	MaxSpeed = 550.0f;
@@ -76,7 +76,7 @@ void AProjStartupBall::Tick(float DeltaTime)
 		APickableObject* object = Cast<APickableObject>(overlappingActorsSphere[ActorIndex]);
 		if (object)
 		{
-			if (!object->isAttracting)
+			if (!object->isAttracting && !object->launched)
 			{
 				object->SetPlayer(this);
 			}
@@ -86,16 +86,20 @@ void AProjStartupBall::Tick(float DeltaTime)
 	TArray<AActor*> overlappingActors;
 
 	sphere2->GetOverlappingActors(overlappingActors);
+
 	for (size_t ActorIndex = 0; ActorIndex < overlappingActors.Num(); ActorIndex++)
 	{
 		APickableObject* object = Cast<APickableObject>(overlappingActors[ActorIndex]);
 
 		if (object)
 		{
-			if (!object->isSticked)
+			if (!object->isSticked && object->owner == nullptr && !object->launched)
 			{
+
 				attachedActors.Add(object);
 				object->owner = this;
+			
+
 				object->isSticked = true;
 				object->K2_AttachToActor(this, "", EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, EAttachmentRule::KeepWorld, true);
 				object->staticComp->SetCollisionProfileName(UCollisionProfile::BlockAll_ProfileName);
@@ -123,19 +127,24 @@ void AProjStartupBall::SetupPlayerInputComponent(class UInputComponent* PlayerIn
 	PlayerInputComponent->BindAxis("MoveForward", this, &AProjStartupBall::MoveForward);
 	PlayerInputComponent->BindAction("Jump", IE_Pressed, this, &AProjStartupBall::Jump);
 	PlayerInputComponent->BindAction("Attack", IE_Pressed, this, &AProjStartupBall::Attack);
-	PlayerInputComponent->BindAction("Die", IE_Pressed, this, &AProjStartupBall::Die);
 }
 
 void AProjStartupBall::MoveRight(float Val)
 {
-	const FVector Impulse = FVector(0.f, FMath::Clamp(Val, -1.0f, 1.0f) * currentAcceleration, 0.f);
-	Ball->AddImpulse(Impulse);
+	if (Ball->IsSimulatingPhysics())
+	{
+		const FVector Impulse = FVector(0.f, FMath::Clamp(Val, -1.0f, 1.0f) * currentAcceleration, 0.f);
+		Ball->AddImpulse(Impulse);
+	}
 }
 
 void AProjStartupBall::MoveForward(float Val)
 {
-	const FVector Impulse = FVector(FMath::Clamp(Val, -1.0f, 1.0f) * currentAcceleration, 0.f, 0.f);
-	Ball->AddImpulse(Impulse);
+	if (Ball->IsSimulatingPhysics())
+	{
+		const FVector Impulse = FVector(FMath::Clamp(Val, -1.0f, 1.0f) * currentAcceleration, 0.f, 0.f);
+		Ball->AddImpulse(Impulse);
+	}
 }
 
 // Try to jump
@@ -150,10 +159,11 @@ void AProjStartupBall::Jump()
 	}
 }
 
-void AProjStartupBall::Die()
+void AProjStartupBall::Die(FVector impulse)
 {
-	if (IsPlayerControlled())
-	{
+		Ball->AddImpulse(impulse * 10);
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("DIEEEE ") + FString::FromInt(impulse.Size()));
+
 		AProjStartupGameMode* myMode = Cast<AProjStartupGameMode>(GetWorld()->GetAuthGameMode());
 
 		TArray<AActor*> Players;
@@ -164,15 +174,27 @@ void AProjStartupBall::Die()
 			AProjStartupBall* playerBall = Cast<AProjStartupBall>(Players[i]);
 			if (playerBall)
 			{
-				playerBall->SetActorLocation(playerBall->startingPosition, false, nullptr, ETeleportType::TeleportPhysics);
-				playerBall->Ball->SetSimulatePhysics(true);
+				//playerBall->SetActorLocation(playerBall->startingPosition, false, nullptr, ETeleportType::TeleportPhysics);
+				//playerBall->Ball->SetSimulatePhysics(true);
 			}
 		}
 
 		if (myMode)
 		{
-			myMode->ScorePlayer1++;
-			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(myMode->ScorePlayer1));
+			if (this == myMode->player1)
+			{
+				myMode->ScorePlayer2++;
+
+			}
+			else if (this == myMode->player2)
+			{
+				myMode->ScorePlayer1++;
+
+			}
+			else {
+				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("error"));
+			}
+			MyBlueprintEventFunction();
 		}
 		else {
 			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("error"));
@@ -190,12 +212,14 @@ void AProjStartupBall::Die()
 		//existingController->Possess(player);
 		//camera = GetWorld()->SpawnActor<ASmooMainCamera>(ASmooMainCamera::StaticClass(), startingPosition);
 		//player->startingPosition = startingPosition;
-	}
+	
 }
 
 
 void AProjStartupBall::Attack()
 {
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
+
 	for (int32 ActorIndex = 0; ActorIndex < attachedActors.Num(); ActorIndex++)
 	{
 		APickableObject* object = attachedActors[ActorIndex];
@@ -210,30 +234,33 @@ void AProjStartupBall::Attack()
 			staticComp->SetSimulatePhysics(true);
 			staticComp->SetCollisionProfileName(UCollisionProfile::BlockAllDynamic_ProfileName);
 			staticComp->AddImpulse(GetVelocity() / 2.0f);
+			GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("Impulse"));
+
 		}
 		//object->isAttracting = false;
 		object->launched = true;
+		object->Landed = false;
+
 	}
 
 	attachedActors.Empty();
-	//GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString::FromInt(attachedActors.Num()));
 
 }
 
 void AProjStartupBall::BeginOverlap(UPrimitiveComponent* OverlappedComponent, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	APickableObject* object = Cast<APickableObject>(OtherActor);
-
-	if (object)
-	{
-		if (object->owner != this && object->owner != nullptr)
-		{
-			//if(object->owner->GetAttachParentActor())
-			if (object->GetAttachParentActor() == nullptr)
-			{
-				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("attack"));
-				object->owner = nullptr;
-			}
-		}
-	}
+//	APickableObject* object = Cast<APickableObject>(OtherActor);
+//
+//	if (object)
+//	{
+//		if (object->owner != this && object->owner != nullptr)
+//		{
+//			//if(object->owner->GetAttachParentActor())
+//			if (object->GetAttachParentActor() == nullptr)
+//			{
+//				GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Red, FString("attack"));
+//				object->owner = nullptr;
+//			}
+//		}
+//	}
 }
